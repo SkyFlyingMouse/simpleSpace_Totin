@@ -1,0 +1,68 @@
+baseURL = "https://skyflyingmouse.github.io/simpleSpace_Totin/"
+locale = "zh-CN"
+title = "美丽蓝龙Totin"
+theme = "PaperMod"
+
+# 项目站点在子路径下，必须显式打开
+enableRobotsTXT = true
+buildDrafts = false
+buildFuture = false
+
+# 生成搜索索引需要的输出格式
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[taxonomies]
+tag = "tags"
+
+[params]
+  description = "围观乐子固然令人愉快，但成为乐子更加激动人心"
+  author = "美丽蓝龙Totin"
+  defaultTheme = "auto"        # 自动跟随系统深/浅色
+  ShowShareButtons = false
+  ShowReadingTime = true
+  ShowBreadCrumbs = true
+  ShowPostNavLinks = true
+  ShowCodeCopyButtons = true
+  ShowToc = true
+  disableSpecial1stPost = true
+
+  [params.homeInfoParams]
+    Title = "美丽蓝龙Totin"
+    Content = "围观乐子固然令人愉快，但成为乐子更加激动人心"
+
+  [params.fuseOpts]
+    isCaseSensitive = false
+    shouldSort = true
+    location = 0
+    distance = 1000
+    threshold = 0.4
+    minMatchCharLength = 0
+    keys = ["title", "permalink", "summary", "content"]
+
+[menu]
+  [[menu.main]]
+    identifier = "archives"
+    name = "归档"
+    url = "/archives/"
+    weight = 10
+  [[menu.main]]
+    identifier = "tags"
+    name = "标签"
+    url = "/tags/"
+    weight = 20
+  [[menu.main]]
+    identifier = "search"
+    name = "搜索"
+    url = "/search/"
+    weight = 30
+  [[menu.main]]
+    identifier = "about"
+    name = "关于"
+    url = "/about/"
+    weight = 40
+
+[markup.highlight]
+  noClasses = false
+  codeFences = true
+  guessSyntax = true

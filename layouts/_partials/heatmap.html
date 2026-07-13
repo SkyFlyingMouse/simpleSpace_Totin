@@ -1,0 +1,62 @@
+{{/* 每日活跃度热力图：按 posts 文章的发布日期，构建时统计。纯 HTML+CSS，无 JS。 */}}
+{{ $posts := where site.RegularPages "Section" "posts" }}
+
+{{/* 统计每天文章数，key = "2006-01-02" */}}
+{{ $counts := dict }}
+{{ range $posts }}
+  {{ $d := .Date.Format "2006-01-02" }}
+  {{ $counts = merge $counts (dict $d (add (index $counts $d | default 0) 1)) }}
+{{ end }}
+
+{{/* 网格范围：回到 52 周前的周日，共 53 列 x 7 行 */}}
+{{ $today := now }}
+{{ $wd := int (printf "%d" $today.Weekday) }}
+{{ $start := $today.AddDate 0 0 (sub 0 (add (mul 52 7) $wd)) }}
+
+<style>
+  .heatmap { margin: 1.5rem 0 2rem; }
+  .heatmap .hm-title { font-size: 15px; font-weight: 600; margin-bottom: .6rem; }
+  .heatmap .hm-grid { display: flex; flex-direction: row; gap: 3px; overflow-x: auto; padding-bottom: 4px; }
+  .heatmap .hm-col { display: flex; flex-direction: column; gap: 3px; }
+  .heatmap .hm-cell { width: 12px; height: 12px; border-radius: 2px; background: var(--hm-empty); }
+  .heatmap .hm-future { visibility: hidden; }
+  .heatmap .hm-l1 { background: #9be9a8; }
+  .heatmap .hm-l2 { background: #40c463; }
+  .heatmap .hm-l3 { background: #30a14e; }
+  .heatmap .hm-l4 { background: #216e39; }
+  .heatmap .hm-legend { display: flex; align-items: center; gap: 4px; font-size: 12px; margin-top: .5rem; opacity: .8; }
+  .heatmap .hm-legend .hm-cell { width: 11px; height: 11px; }
+  :root .heatmap { --hm-empty: #ebedf0; }
+  html[data-theme="dark"] .heatmap { --hm-empty: #2d333b; }
+  @media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] .heatmap { --hm-empty: #2d333b; }
+  }
+</style>
+
+<div class="heatmap">
+  <div class="hm-title">活跃度 · 共 {{ len $posts }} 篇</div>
+  <div class="hm-grid">
+    {{ range $col := seq 0 52 }}
+    <div class="hm-col">
+      {{ range $row := seq 0 6 }}
+      {{ $day := $start.AddDate 0 0 (add (mul $col 7) $row) }}
+      {{ $ds := $day.Format "2006-01-02" }}
+      {{ $c := int (index $counts $ds | default 0) }}
+      {{ $future := gt $day.Unix $today.Unix }}
+      {{ $lvl := 0 }}
+      {{ if ge $c 4 }}{{ $lvl = 4 }}{{ else if eq $c 3 }}{{ $lvl = 3 }}{{ else if eq $c 2 }}{{ $lvl = 2 }}{{ else if eq $c 1 }}{{ $lvl = 1 }}{{ end }}
+      <div class="hm-cell hm-l{{ $lvl }}{{ if $future }} hm-future{{ end }}" title="{{ $ds }}：{{ $c }} 篇"></div>
+      {{ end }}
+    </div>
+    {{ end }}
+  </div>
+  <div class="hm-legend">
+    <span>少</span>
+    <span class="hm-cell hm-l0"></span>
+    <span class="hm-cell hm-l1"></span>
+    <span class="hm-cell hm-l2"></span>
+    <span class="hm-cell hm-l3"></span>
+    <span class="hm-cell hm-l4"></span>
+    <span>多</span>
+  </div>
+</div>

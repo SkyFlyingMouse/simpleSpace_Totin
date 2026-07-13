@@ -1,0 +1,10 @@
+# Hugo 构建产物
+/public/
+/resources/_gen/
+.hugo_build.lock
+
+# 系统/编辑器杂项
+.DS_Store
+
+# 本地私有文档（不上传）
+使用指南.md
