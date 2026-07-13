@@ -1,0 +1,10 @@
+/* 压扁首页版头：主题默认 min-height:320px 太大 */
+.first-entry.home-info {
+  min-height: 0;
+  margin: 0.5rem 0 0.75rem;
+  justify-content: flex-start;
+}
+
+.home-info .entry-content p {
+  margin-block: 0.35em;
+}
