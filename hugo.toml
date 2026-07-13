@@ -27,6 +27,11 @@ tag = "tags"
   ShowToc = true
   disableSpecial1stPost = true
 
+  [params.label]
+    text = "美丽蓝龙Totin"
+    icon = "images/头像4.png"
+    iconHeight = 34
+
   [params.homeInfoParams]
     Title = "美丽蓝龙Totin"
     Content = "围观乐子固然令人愉快，但成为乐子更加激动人心"

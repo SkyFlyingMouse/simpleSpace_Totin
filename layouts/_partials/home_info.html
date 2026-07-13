@@ -1,5 +1,10 @@
 {{- with site.Params.homeInfoParams }}
 <article class="first-entry home-info">
+    {{- with resources.Get "images/配图.png" }}
+    {{- $banner := .Resize "1200x webp q85" }}
+    <img class="home-banner" src="{{ $banner.Permalink }}" alt="美丽蓝龙Totin" loading="lazy"
+         style="width:100%;height:auto;border-radius:12px;margin-bottom:1rem;">
+    {{- end }}
     <header class="entry-header">
         <h1>{{ .Title | markdownify }}</h1>
     </header>
