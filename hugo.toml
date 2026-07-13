@@ -1,6 +1,6 @@
 baseURL = "https://skyflyingmouse.github.io/simpleSpace_Totin/"
 locale = "zh-CN"
-title = "美丽蓝龙Totin"
+title = "Totin's"
 theme = "PaperMod"
 
 # 项目站点在子路径下，必须显式打开
