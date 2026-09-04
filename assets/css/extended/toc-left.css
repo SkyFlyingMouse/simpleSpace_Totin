@@ -23,6 +23,12 @@
   .post-single > details.toc > .inner {
     margin: 0;
     overflow-wrap: anywhere;
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  /* 一级目录标题加粗（前沿速览里就是各分组；入门文里是各小节） */
+  .post-single > details.toc > .inner > ul > li > a {
+    font-weight: 700;
   }
   .post-single > details.toc > summary {
     cursor: pointer;
