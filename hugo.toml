@@ -16,7 +16,7 @@ home = ["HTML", "RSS", "JSON"]
 tag = "tags"
 
 [params]
-  description = "围观乐子固然令人愉快，但成为乐子更加激动人心"
+  description = "AI / 大模型 / 计算生物学：每日前沿速览 + 入门科普"
   author = "美丽蓝龙Totin"
   defaultTheme = "auto"        # 自动跟随系统深/浅色
   ShowShareButtons = false
@@ -29,7 +29,7 @@ tag = "tags"
 
   [params.homeInfoParams]
     Title = "美丽蓝龙Totin"
-    Content = "围观乐子固然令人愉快，但成为乐子更加激动人心"
+    Content = "专注 AI / 大模型 / 计算生物学。每天精选前沿论文做中文深度摘要，帮你掌握全局；另有面向新手的入门科普。"
 
   [params.fuseOpts]
     isCaseSensitive = false
