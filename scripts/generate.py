@@ -8,6 +8,7 @@
 import datetime
 import json
 import os
+import re
 
 import yaml
 from openai import OpenAI
@@ -43,7 +44,15 @@ def write_summary(client, model, summary_prompt, paper, body):
         messages=[{"role": "user", "content": prompt}],
         temperature=0.5,
     )
-    return resp.choices[0].message.content.strip()
+    text = resp.choices[0].message.content.strip()
+    # 规整段落：每行首尾空白去掉，多个空行压成一个（Markdown 用空行分段）
+    text = "\n".join(line.strip() for line in text.splitlines())
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    # 兜底：去掉模型偶尔多出的开场白段落（"好的，我将按照您的要求…"之类）
+    paras = text.split("\n\n")
+    if paras and re.match(r"^(好的|以下是|下面是|我将|我会|遵照|按照您|当然)", paras[0]):
+        paras = paras[1:]
+    return "\n\n".join(paras).strip()
 
 
 def meta_line(paper):
