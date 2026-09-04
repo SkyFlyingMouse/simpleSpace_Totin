@@ -1,37 +1,31 @@
 /* 文章左侧目录跳转栏
-   宽屏：把主题自带的 ToC 固定到正文左侧留白区，强制展开、可滚动，点标题跳转。
-   窄屏（手机/平板）：不动，保持默认的顶部可折叠目录，避免挤压正文。 */
+   足够宽的屏幕：把主题自带的 ToC 固定到正文左侧留白区，可滚动，点标题跳转。
+   窄屏（放不下侧栏时）：不动，保持默认的顶部目录，避免遮挡正文。 */
 
-@media (min-width: 1300px) {
+@media (min-width: 1200px) {
   .post-single > details.toc {
     position: fixed;
     top: 5rem;
-    /* 正文居中(宽 --main-width)，把目录放到它左侧的留白里 */
-    left: calc(50% - (var(--main-width) / 2) - 17rem);
-    width: 15rem;
+    /* 正文居中(宽 --main-width，两侧留白)，把目录塞进左侧留白里，
+       用 max 兜底：留白不够时也不会盖到正文 */
+    left: max(0.5rem, calc(50% - (var(--main-width) / 2) - 13.5rem));
+    width: 12rem;
     max-height: calc(100vh - 7rem);
     overflow-y: auto;
     margin: 0;
-    padding: 0.6rem 0.9rem;
+    padding: 0.6rem 0.8rem;
     background: var(--entry);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     z-index: 20;
   }
 
-  /* 强制展开，不必点击；标题不再可点击折叠 */
   .post-single > details.toc > .inner {
-    display: block !important;
     margin: 0;
     overflow-wrap: anywhere;
   }
   .post-single > details.toc > summary {
-    list-style: none;
-    cursor: default;
+    cursor: pointer;
     margin-bottom: 0.4rem;
-  }
-  .post-single > details.toc > summary::marker,
-  .post-single > details.toc > summary::-webkit-details-marker {
-    display: none;
   }
 }
