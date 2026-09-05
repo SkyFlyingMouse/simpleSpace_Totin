@@ -26,6 +26,13 @@ SCORES_DIR = os.path.join(HERE, "state", "scores")
 MIN_SCORE = 4        # 只有 >=4 分的才进月报
 MAX_PER_GROUP = 120  # 每个方向最多喂多少篇给模型，防止 prompt 撑爆上下文
 GROUP_TITLES = {"LLM": "大模型 LLM", "RL": "强化学习 RL", "AI+生物": "AI + 生物", "其他": "其他"}
+BEIJING = datetime.timezone(datetime.timedelta(hours=8))
+
+
+def today_beijing():
+    """GitHub runner 是 UTC，但 workflow 按北京时间判断 1 号，这里必须跟它对齐。
+    否则跑月报时 UTC 还停在上月最后一天，「上个月」会算成上上个月，刚过去的那个月永远没月报。"""
+    return datetime.datetime.now(BEIJING).date()
 
 
 def load_month(ym):
@@ -80,7 +87,7 @@ def main():
     if len(sys.argv) > 1:
         ym = sys.argv[1]
     else:
-        first = datetime.date.today().replace(day=1)
+        first = today_beijing().replace(day=1)
         ym = (first - datetime.timedelta(days=1)).strftime("%Y-%m")
     print(f"月报范围：{ym}")
 

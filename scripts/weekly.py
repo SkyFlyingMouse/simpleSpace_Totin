@@ -24,6 +24,13 @@ SCORES_DIR = os.path.join(HERE, "state", "scores")
 MIN_SCORE = 4      # 只有 >=4 分的才进周报候选
 TOP_N = 10         # 最终取多少篇
 GROUP_TITLES = {"LLM": "大模型 LLM", "RL": "强化学习 RL", "AI+生物": "AI + 生物", "其他": "其他"}
+BEIJING = datetime.timezone(datetime.timedelta(hours=8))
+
+
+def today_beijing():
+    """GitHub runner 是 UTC，但 workflow 按北京时间判断周一，这里必须跟它对齐，
+    否则跑周报时 UTC 还停在周日，会往前错一整周。"""
+    return datetime.datetime.now(BEIJING).date()
 
 
 def week_of(day):
@@ -131,7 +138,7 @@ def render_post(monday, sunday, total_cands, picked):
 
 def main():
     day = datetime.date.fromisoformat(sys.argv[1]) if len(sys.argv) > 1 else \
-        datetime.date.today() - datetime.timedelta(days=7)
+        today_beijing() - datetime.timedelta(days=7)
     monday, sunday = week_of(day)
     print(f"周报范围：{monday} ~ {sunday}")
 
