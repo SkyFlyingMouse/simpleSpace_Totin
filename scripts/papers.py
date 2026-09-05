@@ -3,7 +3,7 @@
 改自 MyRadio/papers.py，主要区别：
 1. build_pool 不再按点赞全局截断（那样会饿死 0 赞的 arXiv 生物论文），改成按来源/分类分别限量。
 2. fetch_arxiv 额外解析 comment（常含中稿信息）和是否放出代码。
-3. rank_papers 改成逐篇 1-5 打分 + 分组，保留 >= 阈值 的。
+3. score_papers 改成逐篇 1-5 打分 + 分组，全部返回（阈值过滤交给调用方）。
 """
 
 import json
@@ -134,10 +134,11 @@ def _signal_line(p):
     return " | ".join(bits) if bits else "无额外信号"
 
 
-def rank_papers(client, model, interests, rubric, groups, pool, threshold, max_papers):
-    """一次 DeepSeek 调用给候选池每篇打分（1-5）并分组，保留 >= threshold 的。
+def score_papers(client, model, interests, rubric, groups, pool):
+    """一次 DeepSeek 调用给候选池每篇打分（1-5）并分组。
 
-    返回选中论文列表，每个 dict 额外带 score 和 group 字段，按分数降序。
+    返回全部打过分的论文，每个 dict 额外带 score 和 group 字段，按分数降序。
+    不在这里按阈值过滤：低分的也要存下来，周报月报要用。
     """
     if not pool:
         return []
@@ -166,22 +167,19 @@ def rank_papers(client, model, interests, rubric, groups, pool, threshold, max_p
     text = re.sub(r"^```(?:json)?|```$", "", text.strip(), flags=re.MULTILINE).strip()
     items = json.loads(text)
 
-    picked = []
+    scored = []
     for it in items:
         i = it.get("i")
-        score = it.get("score", 0)
         group = it.get("group", "其他")
         if not isinstance(i, int) or not (0 <= i < len(pool)):
             continue
-        if score < threshold:
-            continue
         p = dict(pool[i])
-        p["score"] = score
+        p["score"] = it.get("score", 0)
         p["group"] = group if group in groups else "其他"
-        picked.append(p)
+        scored.append(p)
 
-    picked.sort(key=lambda x: x["score"], reverse=True)
-    return picked[:max_papers]
+    scored.sort(key=lambda x: x["score"], reverse=True)
+    return scored
 
 
 def fetch_fulltext(arxiv_id):

@@ -43,6 +43,11 @@ tag = "tags"
 
 [menu]
   [[menu.main]]
+    identifier = "weekly"
+    name = "周报"
+    url = "/tags/前沿周报/"
+    weight = 5
+  [[menu.main]]
     identifier = "archives"
     name = "归档"
     url = "/archives/"

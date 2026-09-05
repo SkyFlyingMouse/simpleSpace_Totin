@@ -19,6 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)                        # blog_KISS 根目录
 POSTS_DIR = os.path.join(REPO, "content", "posts")
 STATE_FILE = os.path.join(HERE, "state", "seen.json")
+SCORES_DIR = os.path.join(HERE, "state", "scores")
 
 
 def load_seen():
@@ -30,6 +31,27 @@ def load_seen():
 def save_seen(seen):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     json.dump(sorted(seen), open(STATE_FILE, "w"), ensure_ascii=False, indent=2)
+
+
+def save_scores(date, scored, picked_ids):
+    """把当天全部打分结果存一个文件，周报和月报直接读它，不用重新打分。"""
+    os.makedirs(SCORES_DIR, exist_ok=True)
+    records = [
+        {
+            "id": p["id"],
+            "title": p["title"],
+            "score": p["score"],
+            "group": p["group"],
+            "abstract": p["abstract"][:500],
+            "upvotes": p["upvotes"],
+            "comment": p["comment"],
+            "has_code": p["has_code"],
+            "picked": p["id"] in picked_ids,   # 是否进了当天日报，周报靠它挂「详细解读」链接
+        }
+        for p in scored
+    ]
+    path = os.path.join(SCORES_DIR, f"{date}.json")
+    json.dump(records, open(path, "w"), ensure_ascii=False, indent=2)
 
 
 def write_summary(client, model, summary_prompt, paper, body):
@@ -104,6 +126,7 @@ def main():
     groups = cfg["groups"]
 
     seen = load_seen()
+    date = datetime.date.today().isoformat()
 
     print("1. 抓候选论文...")
     pool = papers.build_pool(cfg, seen)
@@ -113,11 +136,10 @@ def main():
         return
 
     print("2. DeepSeek 打分选题...")
-    picked = papers.rank_papers(
-        deepseek, model, cfg["interests"], cfg["rubric"], groups,
-        pool, cfg["score_threshold"], cfg["max_papers"],
-    )
-    print(f"   选中 {len(picked)} 篇（阈值 {cfg['score_threshold']}）")
+    scored = papers.score_papers(deepseek, model, cfg["interests"], cfg["rubric"], groups, pool)
+    picked = [p for p in scored if p["score"] >= cfg["score_threshold"]][: cfg["max_papers"]]
+    save_scores(date, scored, {p["id"] for p in picked})
+    print(f"   打分 {len(scored)} 篇，选中 {len(picked)} 篇（阈值 {cfg['score_threshold']}）")
     if not picked:
         print("   今天没有达到阈值的论文，不出。")
         return
@@ -132,7 +154,6 @@ def main():
         seen.add(p["id"])
 
     print("4. 渲染文章...")
-    date = datetime.date.today().isoformat()
     os.makedirs(POSTS_DIR, exist_ok=True)
     out_md = os.path.join(POSTS_DIR, f"前沿速览-{date}.md")
     with open(out_md, "w") as f:

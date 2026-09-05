@@ -45,11 +45,31 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: python scripts/generate.py
+      - name: Generate weekly digest (北京时间周一才跑)
+        continue-on-error: true    # 周报挂了不能连累日报提交，报错照样打在日志里
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ "$(date -u -d '+8 hours' +%u)" = "1" ]; then
+            python scripts/weekly.py
+          else
+            echo "今天不是周一，跳过周报。"
+          fi
+      - name: Generate monthly digest (北京时间 1 号才跑)
+        continue-on-error: true    # 同上
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ "$(date -u -d '+8 hours' +%d)" = "01" ]; then
+            python scripts/monthly.py
+          else
+            echo "今天不是 1 号，跳过月报。"
+          fi
       - name: Commit new post
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/posts/ scripts/state/seen.json
+          git add content/posts/ scripts/state/
           if git diff --cached --quiet; then
             echo "今天没有新内容，跳过提交。"
           else
