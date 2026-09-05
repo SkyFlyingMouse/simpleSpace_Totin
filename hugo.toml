@@ -16,7 +16,7 @@ home = ["HTML", "RSS", "JSON"]
 tag = "tags"
 
 [params]
-  description = "AI / 大模型 / 计算生物学：每日前沿速览 + 入门科普"
+  description = "AI / 大模型 / 计算生物学：前沿速览日报 + 周报月报 + 入门科普"
   author = "美丽蓝龙Totin"
   defaultTheme = "auto"        # 自动跟随系统深/浅色
   ShowShareButtons = false
@@ -30,7 +30,7 @@ tag = "tags"
 
   [params.homeInfoParams]
     Title = "美丽蓝龙Totin"
-    Content = "专注 AI / 大模型 / 计算生物学。每天精选前沿论文做中文深度摘要，帮你掌握全局；另有面向新手的入门科普。"
+    Content = "专注 AI / 大模型 / 计算生物学。每天精选前沿论文做中文深度摘要，每周一出周报、每月 1 号出月报，帮你掌握全局；另有面向新手的入门科普。"
 
   [params.fuseOpts]
     isCaseSensitive = false
