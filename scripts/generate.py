@@ -1,6 +1,7 @@
-"""每日前沿速览：找论文 -> 打分选题 -> 抓全文 -> 写中文摘要 -> 渲染成 Hugo 文章。
+"""每日前沿速览：找论文 -> 打分选题 -> 写短评 -> 渲染成 Hugo 文章。
 
-输出一篇 content/posts/前沿速览-YYYY-MM-DD.md，按方向分组，每篇 3-4 句中文摘要 + 原文链接。
+目标：一天内容 10 分钟内扫完。输出 content/posts/前沿速览-YYYY-MM-DD.md，
+按方向分组，每篇 2～3 句短评 + 原文链接（只用摘要，不抓全文）。
 用法：
     DEEPSEEK_API_KEY=xxx python scripts/generate.py
 """
@@ -55,26 +56,23 @@ def save_scores(date, scored, picked_ids):
 
 
 def write_summary(client, model, summary_prompt, paper, body):
-    """让 DeepSeek 基于全文（抓不到则用摘要）写一段 3-4 句中文摘要。"""
+    """让 DeepSeek 基于摘要写 2～3 句短评（快扫用，不需要全文）。"""
     prompt = (
         f"{summary_prompt}\n\n"
         f"标题：{paper['title']}\n\n"
-        f"正文/摘要：\n{body}"
+        f"摘要：\n{body}"
     )
     resp = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
+        temperature=0.4,
+        max_tokens=200,
     )
     text = resp.choices[0].message.content.strip()
-    # 规整段落：每行首尾空白去掉，多个空行压成一个（Markdown 用空行分段）
-    text = "\n".join(line.strip() for line in text.splitlines())
-    text = re.sub(r"\n{3,}", "\n\n", text).strip()
-    # 兜底：去掉模型偶尔多出的开场白段落（"好的，我将按照您的要求…"之类）
-    paras = text.split("\n\n")
-    if paras and re.match(r"^(好的|以下是|下面是|我将|我会|遵照|按照您|当然)", paras[0]):
-        paras = paras[1:]
-    return "\n\n".join(paras).strip()
+    # 压成一段：去掉多余换行和开场白
+    text = " ".join(line.strip() for line in text.splitlines() if line.strip())
+    text = re.sub(r"^(好的|以下是|下面是|我将|我会|遵照|按照您|当然)[^。！？]*[。！？]\s*", "", text)
+    return text.strip()
 
 
 def meta_line(paper):
@@ -90,7 +88,7 @@ def meta_line(paper):
 
 
 def render_post(date, groups, picked_by_group):
-    """按分组拼出整篇 Markdown 文章内容。"""
+    """按分组拼出整篇 Markdown 文章内容（短评版，10 分钟内可扫完）。"""
     group_titles = {"LLM": "大模型 LLM", "RL": "强化学习 RL", "AI+生物": "AI + 生物", "其他": "其他"}
     total = sum(len(v) for v in picked_by_group.values())
     lines = [
@@ -100,7 +98,7 @@ def render_post(date, groups, picked_by_group):
         'tags: ["前沿速览"]',
         "---",
         "",
-        f"今日精选 {total} 篇（AI / LLM / RL / 计算生物学）。按评分排序，点标题看原文。",
+        f"今日热点 {total} 篇，每篇两三句短评，约 10 分钟内可扫完。只留评分 ≥4 的重点；点标题进原文。",
         "",
     ]
     for g in groups:
@@ -144,12 +142,13 @@ def main():
         print("   今天没有达到阈值的论文，不出。")
         return
 
-    print("3. 逐篇抓全文 + 写摘要...")
+    print("3. 逐篇写短评（只用摘要）...")
     picked_by_group = {g: [] for g in groups}
     for p in picked:
         print(f"   [{p['score']}分/{p['group']}] {p['title'][:55]}")
-        body = papers.fetch_fulltext(p["id"]) or p["abstract"]
-        p["summary"] = write_summary(deepseek, model, cfg["script"]["summary_prompt"], p, body)
+        p["summary"] = write_summary(
+            deepseek, model, cfg["script"]["summary_prompt"], p, p["abstract"]
+        )
         picked_by_group[p["group"]].append(p)
         seen.add(p["id"])
 
